@@ -2,12 +2,13 @@
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using SteamBigData.Data;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SteamBigData
 {
 	public class ParserService : BackgroundService
 	{
-        private readonly TimeSpan _period = TimeSpan.FromSeconds(5);
+        private readonly TimeSpan _period = TimeSpan.FromSeconds(1);
         private readonly ILogger<ParserService> _logger;
 
         private readonly IServiceProvider _serviceProvider;
@@ -15,7 +16,7 @@ namespace SteamBigData
         public int itemNameId = 176288467;
         private string url = "https://steamcommunity.com/market/itemordersactivity?country=UA&language=english&currency=1&item_nameid=";
         HttpClient client = new HttpClient();
-
+        ValueComparer valueComparer = new();
       
 
         private class JsonInfo
@@ -25,6 +26,26 @@ namespace SteamBigData
             public int timestamp { get; set; }
         }
 
+        class ValueComparer : IEqualityComparer<SoldInfo>
+        {
+            public bool Equals(SoldInfo? x, SoldInfo? y)
+            {
+                if (x != null || y != null) {
+                    return x.itemNameId == y.itemNameId
+                        && x.price == y.price
+                        && x.buyerUserName == y.buyerUserName
+                        && x.sellerUserName == y.sellerUserName
+                        && x.timestamp == x.timestamp;
+                }
+                return false;
+            }
+
+            public int GetHashCode([DisallowNull] SoldInfo obj)
+            {
+                throw new NotImplementedException();
+            }
+        }
+        
 
         public ParserService(
             ILogger<ParserService> logger,
@@ -61,7 +82,11 @@ namespace SteamBigData
                             soldInfo.sellerUserName = item.Substring(20 + item.LastIndexOf("market_ticker_name"), item.IndexOf("</span> for") - item.LastIndexOf("market_ticker_name") - 20);
                             soldInfo.price = decimal.Parse(item.Substring(13 + item.IndexOf("</span> for"), item.LastIndexOf("</span>") - item.IndexOf("</span> for") - 13));
                             soldInfo.timestamp = jsonInfo.timestamp;
-                            dc.Add(soldInfo);
+                           
+                            if (!dc.SoldInfos.ToList().Contains(soldInfo, valueComparer))
+                            {
+                                dc.Add(soldInfo);
+                            }  
                         }
                     }
                     await dc.SaveChangesAsync();
