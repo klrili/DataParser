@@ -25,24 +25,6 @@ namespace SteamBigData
             public int timestamp { get; set; }
         }
 
-        //private class SoldInfo
-        //{
-        //    public int id { get; set; }
-
-        //    public int itemNameId { get; set; }
-
-        //    public string? buyerUserName { get; set; }
-
-        //    public string? buyerAvatarUrl { get; set; }
-
-        //    public string? sellerUserName { get; set; }
-
-        //    public string? sellerAvatarUrl { get; set; }
-
-        //    public decimal price { get; set; }
-
-        //    public int timestamp { get; set; }
-        //}
 
         public ParserService(
             ILogger<ParserService> logger,
