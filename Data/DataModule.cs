@@ -31,6 +31,17 @@ namespace SteamBigData.Data
         public decimal price { get; set; }
 
         public int timestamp { get; set; }
+
+        public ItemInfo? ItemInfo { get; set; }
+    }
+
+    public class ItemInfo
+    {
+        public int id { get; set; }
+
+        public int itemId { get; set; }
+
+        public int itemName { get; set; }
     }
 }
 
