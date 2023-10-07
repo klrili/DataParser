@@ -26,27 +26,6 @@ namespace SteamBigData
             public int timestamp { get; set; }
         }
 
-        class ValueComparer : IEqualityComparer<SoldInfo>
-        {
-            public bool Equals(SoldInfo? x, SoldInfo? y)
-            {
-                if (x != null || y != null) {
-                    return x.itemNameId == y.itemNameId
-                        && x.price == y.price
-                        && x.buyerUserName == y.buyerUserName
-                        && x.sellerUserName == y.sellerUserName
-                        && x.timestamp == x.timestamp;
-                }
-                return false;
-            }
-
-            public int GetHashCode([DisallowNull] SoldInfo obj)
-            {
-                throw new NotImplementedException();
-            }
-        }
-        
-
         public ParserService(
             ILogger<ParserService> logger,
             IServiceProvider serviceProvider)
@@ -83,7 +62,12 @@ namespace SteamBigData
                             soldInfo.price = decimal.Parse(item.Substring(13 + item.IndexOf("</span> for"), item.LastIndexOf("</span>") - item.IndexOf("</span> for") - 13));
                             soldInfo.timestamp = jsonInfo.timestamp;
                            
-                            if (!dc.SoldInfos.ToList().Contains(soldInfo, valueComparer))
+                            if (!dc.SoldInfos.Any(x =>
+                                x.itemNameId == soldInfo.itemNameId &&
+                                x.price == soldInfo.price &&
+                                x.buyerUserName == soldInfo.buyerUserName &&
+                                x.sellerUserName == soldInfo.sellerUserName &&
+                                x.timestamp == soldInfo.timestamp))
                             {
                                 dc.Add(soldInfo);
                             }  
